@@ -1,0 +1,61 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.18;
+
+contract nftMarket{
+    address payable _owner;
+   mapping (uint256 => address) owners;
+   mapping(uint256 => ListingInfo) listingDetails;
+
+    struct ListingInfo{
+    address payable  currentOwner;
+    uint256 listingPrice;
+    uint256 tokenId;
+    bool  listState;
+   }
+   constructor(){
+    _owner = payable(msg.sender);
+   }
+
+    ListingInfo listchecks;
+
+   function listingSearch(uint256 _tokenId) external view returns(ListingInfo memory){
+        return listingDetails[_tokenId];
+   }
+
+   function listMyNft(uint256 _price, uint256 _tokenId) external returns(string memory){
+        require(msg.sender == owners[_tokenId]);
+        listchecks.currentOwner = payable (msg.sender);
+        listchecks.listingPrice = _price;
+        listchecks.listState = true;
+
+        return "listing successful";
+
+   } 
+
+  function received(uint256 _price) public payable returns(bool) {
+    if(_price == msg.value){
+        return true;
+    }else{
+        return false;
+    }
+
+   }
+  
+   function sellMyNft(uint256 _price, uint256 _tokenId, address _buyer ) external payable{
+        require(received(_price));
+        require(msg.sender == owners[_tokenId]);
+        owners[_tokenId] = _buyer;
+
+   }
+
+   function buyNft(uint256 _price, uint256 _tokenId) external payable returns (string memory ){
+        require(msg.sender.balance>_price);
+        payable(owners[_tokenId]).transfer(_price);
+        return "payment successful";
+   }
+    function receiver() external payable { }
+
+
+
+
+}
